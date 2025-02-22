@@ -1,7 +1,6 @@
 <script lang="ts">
 	import type { ParsedOutput } from "$lib/types/parsed-output";
 	import { runExifTools } from "$lib/utils/run-exif-tools";
-	import Preview from "../components/file-preview.svelte";
 	import FileDisplay from "../components/file-display.svelte";
 
 	let output: ParsedOutput;
@@ -10,6 +9,7 @@
 	let fileInput: HTMLInputElement;
 	let fileUrl: string | null = null;
 	let currentFile: File | null = null;
+	let files: File[] = [];
 
 	function handleDragEnter(e: DragEvent) {
 		e.preventDefault();
@@ -24,12 +24,12 @@
 	async function handleDrop(e: DragEvent) {
 		e.preventDefault();
 		isDragging = false;
-		const files = e.dataTransfer?.files;
-		if (files && files.length > 0) {
-			console.log('Files dropped:', files);
-			currentFile = files[0];
-			fileUrl = URL.createObjectURL(files[0]);
-			output = await runExifTools(files[0]);
+		const droppedFiles = e.dataTransfer?.files;
+		if (droppedFiles && droppedFiles.length > 0) {
+			files = [...files, ...Array.from(droppedFiles)];
+			if (!currentFile) {
+				await selectFile(files[0]);
+			}
 		}
 	}
 
@@ -39,12 +39,30 @@
 
 	async function handleFileSelect(e: Event) {
 		const target = e.target as HTMLInputElement;
-		const files = target.files;
-		if (files && files.length > 0) {
-			currentFile = files[0];
-			fileUrl = URL.createObjectURL(files[0]);
-			output = await runExifTools(files[0]);
+		const selectedFiles = target.files;
+		if (selectedFiles && selectedFiles.length > 0) {
+			files = [...files, ...Array.from(selectedFiles)];
+			if (!currentFile) {
+				await selectFile(files[0]);
+			}
 		}
+		// Reset input so the same file can be selected again
+		target.value = '';
+	}
+
+	async function selectFile(file: File) {
+		currentFile = file;
+		if (fileUrl) {
+			URL.revokeObjectURL(fileUrl);
+		}
+		fileUrl = URL.createObjectURL(file);
+		output = await runExifTools(file);
+	}
+
+	function formatFileSize(bytes: number): string {
+		if (bytes < 1024) return bytes + ' B';
+		if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+		return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
 	}
 
 </script>
@@ -56,13 +74,14 @@
 	</p>
     </div>
     <div class="flex gap-8">
-        <div class="w-[35%]">
+        <div class="w-[35%] flex flex-col gap-4">
             <input
                 type="file"
                 accept="*/*"
                 class="hidden"
                 bind:this={fileInput}
                 on:change={handleFileSelect}
+                multiple
             />
             <div
                 bind:this={dropzone}
@@ -76,8 +95,25 @@
                 role="button"
                 tabindex="0"
             >
-                {fileUrl ? 'Upload more files' : 'Drop a file here or click to select'}
+                {files.length > 0 ? 'Add more files' : 'Drop files here or click to select'}
             </div>
+
+            {#if files.length > 0}
+                <div class="flex flex-col gap-2">
+                    {#each files as file}
+                        <button
+                            class="flex flex-col gap-1 p-3 text-left border rounded hover:bg-gray-50 transition-colors {file === currentFile ? 'border-blue-500 bg-blue-50' : 'border-gray-200'}"
+                            on:click={() => selectFile(file)}
+                        >
+                            <div class="font-medium truncate">{file.name}</div>
+                            <div class="text-sm text-gray-500">
+                                <div>{file.type || 'Unknown type'}</div>
+                                <div>{formatFileSize(file.size)} • {new Date(file.lastModified).toLocaleDateString()}</div>
+                            </div>
+                        </button>
+                    {/each}
+                </div>
+            {/if}
         </div>
         {#if fileUrl}
             <FileDisplay {fileUrl} currentFile={currentFile} {output} />
