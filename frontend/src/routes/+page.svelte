@@ -1,14 +1,14 @@
 <script lang="ts">
 	import type { ParsedOutput } from "$lib/types/parsed-output";
 	import { runExifTools } from "$lib/utils/run-exif-tools";
+	import Preview from "../components/preview.svelte";
 
 	let output: ParsedOutput;
 	let dropzone: HTMLDivElement;
 	let isDragging = false;
 	let fileInput: HTMLInputElement;
 	let imageUrl: string | null = null;
-
-	// Create a custom Fd implementation for stdout/stderr
+	let currentFile: File | null = null;
 
 	function handleDragEnter(e: DragEvent) {
 		e.preventDefault();
@@ -26,6 +26,7 @@
 		const files = e.dataTransfer?.files;
 		if (files && files.length > 0) {
 			console.log('Files dropped:', files);
+			currentFile = files[0];
 			imageUrl = URL.createObjectURL(files[0]);
 			output = await runExifTools(files[0]);
 		}
@@ -39,6 +40,7 @@
 		const target = e.target as HTMLInputElement;
 		const files = target.files;
 		if (files && files.length > 0) {
+			currentFile = files[0];
 			imageUrl = URL.createObjectURL(files[0]);
 			output = await runExifTools(files[0]);
 		}
@@ -56,7 +58,7 @@
 		<div class="{imageUrl ? 'w-1/3' : 'w-full'}">
 			<input
 				type="file"
-				accept="image/*"
+				accept="*/*"
 				class="hidden"
 				bind:this={fileInput}
 				on:change={handleFileSelect}
@@ -73,11 +75,11 @@
 				role="button"
 				tabindex="0"
 			>
-				{imageUrl ? 'Upload more files' : 'Drop an image file here or click to select'}
+				{imageUrl ? 'Upload more files' : 'Drop a file here or click to select'}
 			</div>
 			{#if imageUrl}
 				<div class="mt-4">
-					<img src={imageUrl} alt="Display" class="max-w-full rounded" />
+					<Preview file={currentFile} url={imageUrl} />
 				</div>
 			{/if}
 		</div>
