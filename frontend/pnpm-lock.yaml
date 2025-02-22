@@ -7,6 +7,10 @@ settings:
 importers:
 
   .:
+    dependencies:
+      '@bjorn3/browser_wasi_shim':
+        specifier: ^0.4.1
+        version: 0.4.1
     devDependencies:
       '@eslint/compat':
         specifier: ^1.2.5
@@ -71,6 +75,9 @@ packages:
   '@ampproject/remapping@2.3.0':
     resolution: {integrity: sha512-30iZtAPgz+LTIYoeivqYo853f02jBYSd5uGnGpkFV0M3xOt9aN73erkgYAmZU43x4VfqcnLxW9Kpg3R5LC4YYw==}
     engines: {node: '>=6.0.0'}
+
+  '@bjorn3/browser_wasi_shim@0.4.1':
+    resolution: {integrity: sha512-54kpBQX69TZ8I1zyDC8sziv/zPT1zoIadv3CmdIZNZ5WDF1houMjAzRZ3dwWvhXObiEBjOxXyS8Ja7vA0EfGEQ==}
 
   '@esbuild/aix-ppc64@0.24.2':
     resolution: {integrity: sha512-thpVCb/rhxE/BnMLQ7GReQLLN8q9qbHmI55F4489/ByVg2aQaQ6kbcLb6FHkocZzQhxc4gx0sCk0tJkKBFzDhA==}
@@ -1363,6 +1370,8 @@ snapshots:
     dependencies:
       '@jridgewell/gen-mapping': 0.3.8
       '@jridgewell/trace-mapping': 0.3.25
+
+  '@bjorn3/browser_wasi_shim@0.4.1': {}
 
   '@esbuild/aix-ppc64@0.24.2':
     optional: true
