@@ -1,11 +1,10 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import { WASI, WASIProcExit } from '@bjorn3/browser_wasi_shim';
 	import { instantiate } from '../lib/asyncify.mjs';
 	import { Fd } from '@bjorn3/browser_wasi_shim';
 	import { PreopenDirectory, File } from '@bjorn3/browser_wasi_shim';
 
-	let output = 'Loading ExifTool...';
+	let output = 'Drop an image file to view its EXIF data';
 	let dropzone: HTMLDivElement;
 	let isDragging = false;
 
@@ -19,31 +18,30 @@
 		}
 	}
 
-
-
-	async function runWasm() {
+	async function runWasm(browserFile: globalThis.File) {
 		try {
-			// Fetch the JPEG file first
-            const fileName = 'favicon.png';
-            const imageResponse = await fetch(fileName);
-			const imageData = await imageResponse.arrayBuffer();
+			// Reset output
+			output = '';
+			
+			const fileName = browserFile.name;
+			const imageData = await browserFile.arrayBuffer();
 
-            const perlScript = `
-            use Image::ExifTool;
-            my $exif = Image::ExifTool->new();      
+			const perlScript = `
+			use Image::ExifTool;
+			my $exif = Image::ExifTool->new();      
 
-            $exif->Options(Unknown => 1);  # Show unknown tags  
+			$exif->Options(Unknown => 1);  # Show unknown tags  
 
-            my $info = $exif->ImageInfo("${fileName}");
-            if ($exif->GetValue("Error")) {
-                print "Error: " . $exif->GetValue("Error") . "\\n";
-            } else {
-                foreach my $tag (sort keys %$info) {
-                    my $val = $info->{$tag};
-                    print "$tag: $val\\n";
-                }
-            }
-            `;
+			my $info = $exif->ImageInfo("${fileName}");
+			if ($exif->GetValue("Error")) {
+				print "Error: " . $exif->GetValue("Error") . "\\n";
+			} else {
+				foreach my $tag (sort keys %$info) {
+					my $val = $info->{$tag};
+					print "$tag: $val\\n";
+				}
+			}
+			`;
 
 			// Create WASI instance with stdin, stdout, stderr file descriptors
 			const wasi = new WASI(
@@ -57,7 +55,7 @@
 						["null", new File(new Uint8Array())]
 					])),
 					new PreopenDirectory(".", new Map([
-						[fileName, new File(new Uint8Array(imageData))]  // Use the actual JPEG data
+						[fileName, new File(new Uint8Array(imageData))]
 					]))
 				],
 				{
@@ -96,6 +94,7 @@
 			output = `Error: ${err instanceof Error ? err.message : 'Unknown error'}`;
 		}
 	}
+
 	function handleDragEnter(e: DragEvent) {
 		e.preventDefault();
 		isDragging = true;
@@ -112,27 +111,10 @@
 		const files = e.dataTransfer?.files;
 		if (files && files.length > 0) {
 			console.log('Files dropped:', files);
-			// TODO: Handle the dropped files
+			runWasm(files[0]);
 		}
 	}
 
-	function handleClick() {
-		const input = document.createElement('input');
-		input.type = 'file';
-		input.accept = 'image/*';
-		input.onchange = (e) => {
-			const files = (e.target as HTMLInputElement).files;
-			if (files && files.length > 0) {
-				console.log('Files selected:', files);
-				// TODO: Handle the selected files
-			}
-		};
-		input.click();
-	}
-
-	onMount(() => {
-		runWasm();
-	});
 </script>
 
 <main class="p-4">
@@ -143,12 +125,10 @@
 		on:dragleave={handleDragLeave}
 		on:dragover|preventDefault
 		on:drop={handleDrop}
-		on:click={handleClick}
-		on:keydown={handleClick}
 		role="button"
 		tabindex="0"
 	>
-		Drop image files here or click to browse
+		Drop an image file here to view its EXIF data
 	</div>
 	<pre class="font-mono bg-gray-100 p-2 rounded">{output}</pre>
 </main>
