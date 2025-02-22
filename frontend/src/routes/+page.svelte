@@ -5,8 +5,24 @@
 	import { PreopenDirectory, File } from '@bjorn3/browser_wasi_shim';
 
 	let output = 'Drop an image file to view its EXIF data';
+	let parsedOutput: {label: string, value: string}[] = [];
 	let dropzone: HTMLDivElement;
 	let isDragging = false;
+	let imageUrl: string | null = null;
+	let fileInput: HTMLInputElement;
+
+	function parseExifOutput(text: string): {label: string, value: string}[] {
+		return text
+			.split('\n')
+			.filter(line => line.includes(':'))
+			.map(line => {
+				const [label, ...valueParts] = line.split(':');
+				return {
+					label: label.trim(),
+					value: valueParts.join(':').trim()
+				};
+			});
+	}
 
 	// Create a custom Fd implementation for stdout/stderr
 	class CustomFd extends Fd {
@@ -22,6 +38,10 @@
 		try {
 			// Reset output
 			output = '';
+			parsedOutput = [];
+			
+			// Create object URL for image preview
+			imageUrl = URL.createObjectURL(browserFile);
 			
 			const fileName = browserFile.name;
 			const imageData = await browserFile.arrayBuffer();
@@ -78,6 +98,7 @@
 
 			try {
 				wasi.start(instance as { exports: { memory: WebAssembly.Memory; _start: () => void } });
+				parsedOutput = parseExifOutput(output);
 			} catch (e) {
 				if (e instanceof WASIProcExit) {
 					console.log(`ExifTool exited with code ${e.code}`);
@@ -115,20 +136,61 @@
 		}
 	}
 
+	function handleClick() {
+		fileInput.click();
+	}
+
+	function handleFileSelect(e: Event) {
+		const target = e.target as HTMLInputElement;
+		const files = target.files;
+		if (files && files.length > 0) {
+			runWasm(files[0]);
+		}
+	}
+
 </script>
 
 <main class="p-4">
-	<div
-		bind:this={dropzone}
-		class="border-2 border-dashed p-8 mb-4 rounded text-center cursor-pointer transition-colors {isDragging ? 'border-blue-500 bg-blue-50' : 'border-gray-300'}"
-		on:dragenter={handleDragEnter}
-		on:dragleave={handleDragLeave}
-		on:dragover|preventDefault
-		on:drop={handleDrop}
-		role="button"
-		tabindex="0"
-	>
-		Drop an image file here to view its EXIF data
+	<div class="flex gap-4">
+		<div class="w-1/3">
+			<input
+				type="file"
+				accept="image/*"
+				class="hidden"
+				bind:this={fileInput}
+				on:change={handleFileSelect}
+			/>
+			<div
+				bind:this={dropzone}
+				class="border-2 border-dashed p-4 rounded text-center cursor-pointer transition-colors {isDragging ? 'border-blue-500 bg-blue-50' : 'border-gray-300'}"
+				on:dragenter={handleDragEnter}
+				on:dragleave={handleDragLeave}
+				on:dragover|preventDefault
+				on:drop={handleDrop}
+				on:click={handleClick}
+				on:keydown={e => e.key === 'Enter' && handleClick()}
+				role="button"
+				tabindex="0"
+			>
+				Drop an image file here or click to select
+			</div>
+			{#if imageUrl}
+				<div class="mt-4">
+					<img src={imageUrl} alt="Selected image" class="max-w-full rounded" />
+				</div>
+			{/if}
+		</div>
+		<div class="w-2/3 overflow-auto">
+			{#if parsedOutput.length > 0}
+				<div class="grid grid-cols-2 gap-2 font-mono bg-gray-100 p-2 rounded">
+					{#each parsedOutput as {label, value}}
+						<div class="font-semibold">{label}</div>
+						<div>{value}</div>
+					{/each}
+				</div>
+			{:else}
+				<pre class="font-mono bg-gray-100 p-2 rounded">{output}</pre>
+			{/if}
+		</div>
 	</div>
-	<pre class="font-mono bg-gray-100 p-2 rounded">{output}</pre>
 </main>
