@@ -1,116 +1,14 @@
 <script lang="ts">
-	import { WASI, WASIProcExit } from '@bjorn3/browser_wasi_shim';
-	import { instantiate } from '../lib/utils/asyncify.mjs';
-	import { Fd } from '@bjorn3/browser_wasi_shim';
-	import { PreopenDirectory, File } from '@bjorn3/browser_wasi_shim';
-    import {parseExifOutput} from '../lib/utils/parse-exif-output';
-    
-	let output = 'Drop an image file to view its EXIF data';
-	let parsedOutput: {label: string, value: string}[] = [];
+	import type { ParsedOutput } from "$lib/types/parsed-output";
+	import { runExifTools } from "$lib/utils/run-exif-tools";
+
+	let output: ParsedOutput;
 	let dropzone: HTMLDivElement;
 	let isDragging = false;
-	let imageUrl: string | null = null;
 	let fileInput: HTMLInputElement;
+	let imageUrl: string | null = null;
 
 	// Create a custom Fd implementation for stdout/stderr
-	class CustomFd extends Fd {
-		private collectedOutput = '';
-
-		fd_write(data: Uint8Array): { ret: number; nwritten: number } {
-			const text = new TextDecoder().decode(data);
-			console.log('WASI output:', text);  // Debug output
-			this.collectedOutput += text;
-			return { ret: 0, nwritten: data.length };
-		}
-
-		getOutput(): string {
-			return this.collectedOutput;
-		}
-	}
-
-	async function runWasm(browserFile: globalThis.File): Promise<string> {
-		try {
-			// Create object URL for image preview
-			imageUrl = URL.createObjectURL(browserFile);
-			
-			const fileName = browserFile.name;
-			const imageData = await browserFile.arrayBuffer();
-
-			const perlScript = `
-			use Image::ExifTool;
-			my $exif = Image::ExifTool->new();      
-
-			$exif->Options(Unknown => 1);  # Show unknown tags  
-
-			my $info = $exif->ImageInfo("${fileName}");
-			if ($exif->GetValue("Error")) {
-				print "Error: " . $exif->GetValue("Error") . "\\n";
-			} else {
-				foreach my $tag (sort keys %$info) {
-					my $val = $info->{$tag};
-					print "$tag: $val\\n";
-				}
-			}
-			`;
-
-			const stdout = new CustomFd();
-			const stderr = new CustomFd();
-
-			// Create WASI instance with stdin, stdout, stderr file descriptors
-			const wasi = new WASI(
-				['perl', '-e', perlScript],
-				['LC_ALL=C'],
-				[
-					new CustomFd(), // stdin (fd 0)
-					stdout, // stdout (fd 1) 
-					stderr, // stderr (fd 2)
-					new PreopenDirectory("/dev", new Map([
-						["null", new File(new Uint8Array())]
-					])),
-					new PreopenDirectory(".", new Map([
-						[fileName, new File(new Uint8Array(imageData))]
-					]))
-				],
-				{
-					debug: true
-				}
-			);
-
-			// Set up imports
-			const imports = {
-				wasi_snapshot_preview1: wasi.wasiImport
-			};
-
-			// In browser we'll need to fetch the wasm file
-			const response = await fetch('zeroperl.wasm');
-			const wasmBuffer = await response.arrayBuffer();
-			
-			console.log("Loading WASM...");
-			const { instance } = await instantiate(wasmBuffer, imports);
-			console.log("WASM loaded successfully");
-
-			try {
-				wasi.start(instance as { exports: { memory: WebAssembly.Memory; _start: () => void } });
-			} catch (e) {
-				if (e instanceof WASIProcExit) {
-					console.log(`ExifTool exited with code ${e.code}`);
-					if (e.code !== 0) {
-						return `${stdout.getOutput()}\nExifTool exited with error code ${e.code}`;
-					}
-				} else {
-					throw e;
-				}
-			}
-
-			const output = stdout.getOutput();
-			parsedOutput = parseExifOutput(output);
-			return output;
-
-		} catch (err) {
-			console.error('Error running ExifTool:', err);
-			return `Error: ${err instanceof Error ? err.message : 'Unknown error'}`;
-		}
-	}
 
 	function handleDragEnter(e: DragEvent) {
 		e.preventDefault();
@@ -128,7 +26,8 @@
 		const files = e.dataTransfer?.files;
 		if (files && files.length > 0) {
 			console.log('Files dropped:', files);
-			output = await runWasm(files[0]);
+			imageUrl = URL.createObjectURL(files[0]);
+			output = await runExifTools(files[0]);
 		}
 	}
 
@@ -140,7 +39,8 @@
 		const target = e.target as HTMLInputElement;
 		const files = target.files;
 		if (files && files.length > 0) {
-			output = await runWasm(files[0]);
+			imageUrl = URL.createObjectURL(files[0]);
+			output = await runExifTools(files[0]);
 		}
 	}
 
@@ -177,9 +77,9 @@
 			{/if}
 		</div>
 		<div class="w-2/3 overflow-auto">
-			{#if parsedOutput.length > 0}
+			{#if output?.length > 0}
 				<div class="grid grid-cols-2 gap-2 font-mono bg-gray-100 p-2 rounded">
-					{#each parsedOutput as {label, value}}
+					{#each output as {label, value}}
 						<div class="font-semibold">{label}</div>
 						<div>{value}</div>
 					{/each}

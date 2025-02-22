@@ -1,4 +1,6 @@
-function parseExifOutput(text: string): { label: string; value: string }[] {
+import type { ParsedOutput } from '$lib/types/parsed-output';
+
+function parseExifOutput(text: string): ParsedOutput {
 	return text
 		.split('\n')
 		.filter((line) => line.includes(':'))
