@@ -1,7 +1,8 @@
 <script lang="ts">
 	import type { ParsedOutput } from "$lib/types/parsed-output";
 	import { runExifTools } from "$lib/utils/run-exif-tools";
-	import Preview from "../components/preview.svelte";
+	import Preview from "../components/file-preview.svelte";
+	import FileDisplay from "../components/file-display.svelte";
 
 	let output: ParsedOutput;
 	let dropzone: HTMLDivElement;
@@ -79,23 +80,7 @@
             </div>
         </div>
         {#if fileUrl}
-            <div class="w-[65%] flex flex-col gap-4 max-h-[600px] overflow-auto bg-gray-100 border border-gray-300 rounded p-4">
-                <div class="flex justify-center">
-                    <Preview file={currentFile} url={fileUrl} />
-                </div>
-                <div class="w-full overflow-auto transition-all duration-300 ease-in-out opacity-0 {fileUrl ? 'opacity-100' : ''}">
-                    {#if output?.length > 0}
-                        <div class="grid grid-cols-2 gap-2 font-mono">
-                            {#each output as {label, value}}
-                                <div class="font-semibold">{label}</div>
-                                <div>{value}</div>
-                            {/each}
-                        </div>
-                    {:else}
-                        <pre class="font-mono">{output}</pre>
-                    {/if}
-                </div>
-            </div>
+            <FileDisplay {fileUrl} currentFile={currentFile} {output} />
         {/if}
     </div>
 </main>
