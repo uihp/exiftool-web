@@ -45,9 +45,14 @@
 	}
 
 </script>
-
-<main class="p-4">
-	<div class="flex gap-4">
+<main class="py-16 px-32 flex flex-col gap-8">
+    <div class="flex flex-col gap-6"> 
+	<h1 class="text-4xl font-['Roboto'] font-bold">exiftool</h1>
+	<p class="max-w-2xl">
+		View the source code (or contribute, flag issues, etc) <a href="https://github.com/lucasgelfond/exiftool-web" class="text-blue-600 underline">here</a>. Based on <a href="https://exiftool.org/" class="text-blue-600 underline">exiftool</a>, <a href="https://github.com/uswriting/zeroperl" class="text-blue-600 underline">zeroperl</a>, and <a href="https://github.com/bjorn3/browser_wasi_shim" class="text-blue-600 underline">browser_wasi_shim</a>. Made with ❤️ in San Francisco by <a href="http://lucasgelfond.online" class="text-blue-600 underline">Lucas Gelfond</a>.
+	</p>
+</div>
+	<div class="flex gap-16">
 		<div class="w-1/3">
 			<input
 				type="file"
@@ -76,7 +81,7 @@
 				</div>
 			{/if}
 		</div>
-		<div class="w-2/3 overflow-auto">
+		<div class="w-[600px] h-[600px] overflow-auto">
 			{#if output?.length > 0}
 				<div class="grid grid-cols-2 gap-2 font-mono bg-gray-100 p-2 rounded">
 					{#each output as {label, value}}
