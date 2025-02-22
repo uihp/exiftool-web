@@ -20,27 +20,30 @@
 	}
 
 
-    const perlScript = `
-use Image::ExifTool;
-my $exif = Image::ExifTool->new();      
 
-$exif->Options(Unknown => 1);  # Show unknown tags  
-
-my $info = $exif->ImageInfo("favicon.png");
-if ($exif->GetValue("Error")) {
-    print "Error: " . $exif->GetValue("Error") . "\\n";
-} else {
-    foreach my $tag (sort keys %$info) {
-        my $val = $info->{$tag};
-        print "$tag: $val\\n";
-    }
-}
-`;
 	async function runWasm() {
 		try {
 			// Fetch the JPEG file first
-			const jpegResponse = await fetch('favicon.png');
-			const jpegData = await jpegResponse.arrayBuffer();
+            const fileName = 'favicon.png';
+            const imageResponse = await fetch(fileName);
+			const imageData = await imageResponse.arrayBuffer();
+
+            const perlScript = `
+            use Image::ExifTool;
+            my $exif = Image::ExifTool->new();      
+
+            $exif->Options(Unknown => 1);  # Show unknown tags  
+
+            my $info = $exif->ImageInfo("${fileName}");
+            if ($exif->GetValue("Error")) {
+                print "Error: " . $exif->GetValue("Error") . "\\n";
+            } else {
+                foreach my $tag (sort keys %$info) {
+                    my $val = $info->{$tag};
+                    print "$tag: $val\\n";
+                }
+            }
+            `;
 
 			// Create WASI instance with stdin, stdout, stderr file descriptors
 			const wasi = new WASI(
@@ -54,7 +57,7 @@ if ($exif->GetValue("Error")) {
 						["null", new File(new Uint8Array())]
 					])),
 					new PreopenDirectory(".", new Map([
-						["favicon.png", new File(new Uint8Array(jpegData))]  // Use the actual JPEG data
+						[fileName, new File(new Uint8Array(imageData))]  // Use the actual JPEG data
 					]))
 				],
 				{
