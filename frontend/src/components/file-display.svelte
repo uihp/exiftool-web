@@ -14,7 +14,7 @@
         </div>
         <div class="w-full overflow-auto transition-all duration-300 ease-in-out opacity-0 {fileUrl ? 'opacity-100' : ''} min-h-[200px]">
             {#if output?.length > 0}
-                <div class="grid grid-cols-2 gap-2 font-mono">
+                <div class="pl-10 grid grid-cols-2 gap-2 font-mono">
                     {#each output as {label, value}}
                         <div class="font-semibold">{label}</div>
                         <div>{value}</div>

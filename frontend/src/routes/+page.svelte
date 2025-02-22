@@ -74,7 +74,7 @@
 	</p>
     </div>
     <div class="flex gap-8">
-        <div class="w-[35%] flex flex-col gap-4">
+        <div class="w-[35%] flex flex-col gap-4 h-[600px]">
             <input
                 type="file"
                 accept="*/*"
@@ -99,7 +99,7 @@
             </div>
 
             {#if files.length > 0}
-                <div class="flex flex-col gap-2">
+                <div class="flex flex-col gap-2 overflow-auto">
                     {#each files as file}
                         <button
                             class="flex flex-col gap-1 p-3 text-left border rounded hover:bg-gray-50 transition-colors {file === currentFile ? 'border-blue-500 bg-blue-50' : 'border-gray-200'}"
