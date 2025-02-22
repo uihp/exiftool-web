@@ -6,6 +6,8 @@
 	import { PreopenDirectory, File } from '@bjorn3/browser_wasi_shim';
 
 	let output = 'Loading ExifTool...';
+	let dropzone: HTMLDivElement;
+	let isDragging = false;
 
 	// Create a custom Fd implementation for stdout/stderr
 	class CustomFd extends Fd {
@@ -91,6 +93,39 @@ if ($exif->GetValue("Error")) {
 			output = `Error: ${err instanceof Error ? err.message : 'Unknown error'}`;
 		}
 	}
+	function handleDragEnter(e: DragEvent) {
+		e.preventDefault();
+		isDragging = true;
+	}
+
+	function handleDragLeave(e: DragEvent) {
+		e.preventDefault();
+		isDragging = false;
+	}
+
+	function handleDrop(e: DragEvent) {
+		e.preventDefault();
+		isDragging = false;
+		const files = e.dataTransfer?.files;
+		if (files && files.length > 0) {
+			console.log('Files dropped:', files);
+			// TODO: Handle the dropped files
+		}
+	}
+
+	function handleClick() {
+		const input = document.createElement('input');
+		input.type = 'file';
+		input.accept = 'image/*';
+		input.onchange = (e) => {
+			const files = (e.target as HTMLInputElement).files;
+			if (files && files.length > 0) {
+				console.log('Files selected:', files);
+				// TODO: Handle the selected files
+			}
+		};
+		input.click();
+	}
 
 	onMount(() => {
 		runWasm();
@@ -98,5 +133,19 @@ if ($exif->GetValue("Error")) {
 </script>
 
 <main class="p-4">
+	<div
+		bind:this={dropzone}
+		class="border-2 border-dashed p-8 mb-4 rounded text-center cursor-pointer transition-colors {isDragging ? 'border-blue-500 bg-blue-50' : 'border-gray-300'}"
+		on:dragenter={handleDragEnter}
+		on:dragleave={handleDragLeave}
+		on:dragover|preventDefault
+		on:drop={handleDrop}
+		on:click={handleClick}
+		on:keydown={handleClick}
+		role="button"
+		tabindex="0"
+	>
+		Drop image files here or click to browse
+	</div>
 	<pre class="font-mono bg-gray-100 p-2 rounded">{output}</pre>
 </main>
