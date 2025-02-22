@@ -17,13 +17,29 @@
 		}
 	}
 
+
     const perlScript = `
 use Image::ExifTool;
-my $exif = Image::ExifTool->new();
-print "ExifTool Version: " . $Image::ExifTool::VERSION . "\\n";
+my $exif = Image::ExifTool->new();      
+
+$exif->Options(Unknown => 1);  # Show unknown tags  
+
+my $info = $exif->ImageInfo("test.jpeg");
+if ($exif->GetValue("Error")) {
+    print "Error: " . $exif->GetValue("Error") . "\\n";
+} else {
+    foreach my $tag (sort keys %$info) {
+        my $val = $info->{$tag};
+        print "$tag: $val\\n";
+    }
+}
 `;
 	async function runWasm() {
 		try {
+			// Fetch the JPEG file first
+			const jpegResponse = await fetch('favicon.png');
+			const jpegData = await jpegResponse.arrayBuffer();
+
 			// Create WASI instance with stdin, stdout, stderr file descriptors
 			const wasi = new WASI(
 				['perl', '-e', perlScript],
@@ -36,7 +52,7 @@ print "ExifTool Version: " . $Image::ExifTool::VERSION . "\\n";
 						["null", new File(new Uint8Array())]
 					])),
 					new PreopenDirectory(".", new Map([
-						["test.jpeg", new File(new Uint8Array())]  // We'll need to put actual image data here
+						["favicon.png", new File(new Uint8Array(jpegData))]  // Use the actual JPEG data
 					]))
 				],
 				{
