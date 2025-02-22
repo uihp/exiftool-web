@@ -2,6 +2,7 @@
 	import type { ParsedOutput } from "$lib/types/parsed-output";
 	import { runExifTools } from "$lib/utils/run-exif-tools";
 	import FileDisplay from "../components/file-display.svelte";
+	import FilePreview from "../components/file-preview.svelte";
 
 	let output: ParsedOutput;
 	let dropzone: HTMLDivElement;
@@ -66,15 +67,17 @@
 	}
 
 </script>
-<main class="py-16 px-32 flex flex-col gap-8">
+<main class="py-16 px-32 flex flex-col gap-8 font-mono">
     <div class="flex flex-col gap-6"> 
-	<h1 class="text-4xl font-['Roboto'] font-bold">exiftool</h1>
+	<h1 class="text-4xl font-mono font-bold">exiftool</h1>
 	<p class="max-w-2xl">
 		View the source code (or contribute, flag issues, etc) <a href="https://github.com/lucasgelfond/exiftool-web" class="text-blue-600 underline">here</a>. Based on <a href="https://exiftool.org/" class="text-blue-600 underline">exiftool</a>, <a href="https://github.com/uswriting/zeroperl" class="text-blue-600 underline">zeroperl</a>, and <a href="https://github.com/bjorn3/browser_wasi_shim" class="text-blue-600 underline">browser_wasi_shim</a>. Made with ❤️ in San Francisco by <a href="http://lucasgelfond.online" class="text-blue-600 underline">Lucas Gelfond</a>.
 	</p>
     </div>
     <div class="flex gap-8">
-        <div class="w-[35%] flex flex-col gap-4 h-[600px]">
+        <div class="w-[25%] flex flex-col gap-4 h-[600px]">
+            <FilePreview file={currentFile} url={fileUrl} />
+
             <input
                 type="file"
                 accept="*/*"
@@ -98,6 +101,7 @@
                 {files.length > 0 ? 'Add more files' : 'Drop files here or click to select'}
             </div>
 
+
             {#if files.length > 0}
                 <div class="flex flex-col gap-2 overflow-auto">
                     {#each files as file}
@@ -105,8 +109,8 @@
                             class="flex flex-col gap-1 p-3 text-left border rounded hover:bg-gray-50 transition-colors {file === currentFile ? 'border-blue-500 bg-blue-50' : 'border-gray-200'}"
                             on:click={() => selectFile(file)}
                         >
-                            <div class="font-medium truncate">{file.name}</div>
-                            <div class="text-sm text-gray-500">
+                            <div class="font-mono truncate">{file.name}</div>
+                            <div class="text-sm text-gray-500 font-mono">
                                 <div>{file.type || 'Unknown type'}</div>
                                 <div>{formatFileSize(file.size)} • {new Date(file.lastModified).toLocaleDateString()}</div>
                             </div>

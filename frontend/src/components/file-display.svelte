@@ -7,14 +7,12 @@
     export let output: ParsedOutput;
 </script>
 
-<div class="w-[65%] flex flex-col gap-4 max-h-[600px] overflow-auto bg-gray-100 border border-gray-300 rounded p-4">
+<div class="w-[65%] flex flex-col gap-4 max-h-[600px] overflow-auto bg-gray-100 border border-gray-300 rounded px-10 pb-10 pt-5">
+    <h2 class="text-2xl py-3 font-mono font-extrabold">Metadata</h2>
     {#if currentFile}
-        <div class="flex justify-center">
-            <Preview file={currentFile} url={fileUrl} />
-        </div>
         <div class="w-full overflow-auto transition-all duration-300 ease-in-out opacity-0 {fileUrl ? 'opacity-100' : ''} min-h-[200px]">
             {#if output?.length > 0}
-                <div class="pl-10 grid grid-cols-2 gap-2 font-mono">
+                <div class="grid grid-cols-2 gap-2 font-mono">
                     {#each output as {label, value}}
                         <div class="font-semibold">{label}</div>
                         <div>{value}</div>
