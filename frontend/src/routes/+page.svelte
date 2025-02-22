@@ -1,9 +1,10 @@
 <script lang="ts">
 	import { WASI, WASIProcExit } from '@bjorn3/browser_wasi_shim';
-	import { instantiate } from '../lib/asyncify.mjs';
+	import { instantiate } from '../lib/utils/asyncify.mjs';
 	import { Fd } from '@bjorn3/browser_wasi_shim';
 	import { PreopenDirectory, File } from '@bjorn3/browser_wasi_shim';
-
+    import {parseExifOutput} from '../lib/utils/parse-exif-output';
+    
 	let output = 'Drop an image file to view its EXIF data';
 	let parsedOutput: {label: string, value: string}[] = [];
 	let dropzone: HTMLDivElement;
@@ -11,35 +12,24 @@
 	let imageUrl: string | null = null;
 	let fileInput: HTMLInputElement;
 
-	function parseExifOutput(text: string): {label: string, value: string}[] {
-		return text
-			.split('\n')
-			.filter(line => line.includes(':'))
-			.map(line => {
-				const [label, ...valueParts] = line.split(':');
-				return {
-					label: label.trim(),
-					value: valueParts.join(':').trim()
-				};
-			});
-	}
-
 	// Create a custom Fd implementation for stdout/stderr
 	class CustomFd extends Fd {
+		private collectedOutput = '';
+
 		fd_write(data: Uint8Array): { ret: number; nwritten: number } {
 			const text = new TextDecoder().decode(data);
 			console.log('WASI output:', text);  // Debug output
-			output += text;
+			this.collectedOutput += text;
 			return { ret: 0, nwritten: data.length };
+		}
+
+		getOutput(): string {
+			return this.collectedOutput;
 		}
 	}
 
-	async function runWasm(browserFile: globalThis.File) {
+	async function runWasm(browserFile: globalThis.File): Promise<string> {
 		try {
-			// Reset output
-			output = '';
-			parsedOutput = [];
-			
 			// Create object URL for image preview
 			imageUrl = URL.createObjectURL(browserFile);
 			
@@ -63,14 +53,17 @@
 			}
 			`;
 
+			const stdout = new CustomFd();
+			const stderr = new CustomFd();
+
 			// Create WASI instance with stdin, stdout, stderr file descriptors
 			const wasi = new WASI(
 				['perl', '-e', perlScript],
 				['LC_ALL=C'],
 				[
 					new CustomFd(), // stdin (fd 0)
-					new CustomFd(), // stdout (fd 1) 
-					new CustomFd(), // stderr (fd 2)
+					stdout, // stdout (fd 1) 
+					stderr, // stderr (fd 2)
 					new PreopenDirectory("/dev", new Map([
 						["null", new File(new Uint8Array())]
 					])),
@@ -98,21 +91,24 @@
 
 			try {
 				wasi.start(instance as { exports: { memory: WebAssembly.Memory; _start: () => void } });
-				parsedOutput = parseExifOutput(output);
 			} catch (e) {
 				if (e instanceof WASIProcExit) {
 					console.log(`ExifTool exited with code ${e.code}`);
 					if (e.code !== 0) {
-						output += `\nExifTool exited with error code ${e.code}`;
+						return `${stdout.getOutput()}\nExifTool exited with error code ${e.code}`;
 					}
 				} else {
 					throw e;
 				}
 			}
 
+			const output = stdout.getOutput();
+			parsedOutput = parseExifOutput(output);
+			return output;
+
 		} catch (err) {
 			console.error('Error running ExifTool:', err);
-			output = `Error: ${err instanceof Error ? err.message : 'Unknown error'}`;
+			return `Error: ${err instanceof Error ? err.message : 'Unknown error'}`;
 		}
 	}
 
@@ -126,13 +122,13 @@
 		isDragging = false;
 	}
 
-	function handleDrop(e: DragEvent) {
+	async function handleDrop(e: DragEvent) {
 		e.preventDefault();
 		isDragging = false;
 		const files = e.dataTransfer?.files;
 		if (files && files.length > 0) {
 			console.log('Files dropped:', files);
-			runWasm(files[0]);
+			output = await runWasm(files[0]);
 		}
 	}
 
@@ -140,11 +136,11 @@
 		fileInput.click();
 	}
 
-	function handleFileSelect(e: Event) {
+	async function handleFileSelect(e: Event) {
 		const target = e.target as HTMLInputElement;
 		const files = target.files;
 		if (files && files.length > 0) {
-			runWasm(files[0]);
+			output = await runWasm(files[0]);
 		}
 	}
 
@@ -176,7 +172,7 @@
 			</div>
 			{#if imageUrl}
 				<div class="mt-4">
-					<img src={imageUrl} alt="Selected image" class="max-w-full rounded" />
+					<img src={imageUrl} alt="Display" class="max-w-full rounded" />
 				</div>
 			{/if}
 		</div>
