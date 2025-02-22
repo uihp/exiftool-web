@@ -53,7 +53,7 @@
 	</p>
 </div>
 	<div class="flex gap-16">
-		<div class="w-1/3">
+		<div class="{imageUrl ? 'w-1/3' : 'w-full'}">
 			<input
 				type="file"
 				accept="image/*"
@@ -73,7 +73,7 @@
 				role="button"
 				tabindex="0"
 			>
-				Drop an image file here or click to select
+				{imageUrl ? 'Upload more files' : 'Drop an image file here or click to select'}
 			</div>
 			{#if imageUrl}
 				<div class="mt-4">
@@ -81,17 +81,19 @@
 				</div>
 			{/if}
 		</div>
-		<div class="w-[600px] h-[600px] overflow-auto">
-			{#if output?.length > 0}
-				<div class="grid grid-cols-2 gap-2 font-mono bg-gray-100 p-2 rounded">
-					{#each output as {label, value}}
-						<div class="font-semibold">{label}</div>
-						<div>{value}</div>
-					{/each}
-				</div>
-			{:else}
-				<pre class="font-mono bg-gray-100 p-2 rounded">{output}</pre>
-			{/if}
-		</div>
+		{#if imageUrl}
+			<div class="w-[600px] h-[600px] overflow-auto transition-all duration-300 ease-in-out opacity-0 {imageUrl ? 'opacity-100' : ''}">
+				{#if output?.length > 0}
+					<div class="grid grid-cols-2 gap-2 font-mono bg-gray-100 p-2 rounded">
+						{#each output as {label, value}}
+							<div class="font-semibold">{label}</div>
+							<div>{value}</div>
+						{/each}
+					</div>
+				{:else}
+					<pre class="font-mono bg-gray-100 p-2 rounded">{output}</pre>
+				{/if}
+			</div>
+		{/if}
 	</div>
 </main>
