@@ -36,7 +36,7 @@
 			<div class="p-5 flex items-center justify-center w-full h-full min-w-[200px]">
 				<iframe 
 					src={url} 
-					class="h-[160px] rounded"
+					class="h-full w-full rounded"
 					title="PDF Preview"
 				></iframe>
 			</div>
