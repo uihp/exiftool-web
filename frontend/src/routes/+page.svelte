@@ -26,7 +26,7 @@ my $exif = Image::ExifTool->new();
 
 $exif->Options(Unknown => 1);  # Show unknown tags  
 
-my $info = $exif->ImageInfo("test.jpeg");
+my $info = $exif->ImageInfo("favicon.png");
 if ($exif->GetValue("Error")) {
     print "Error: " . $exif->GetValue("Error") . "\\n";
 } else {
