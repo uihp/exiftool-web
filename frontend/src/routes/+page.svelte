@@ -3,6 +3,7 @@
 	import { WASI, WASIProcExit } from '@bjorn3/browser_wasi_shim';
 	import { instantiate } from '../lib/asyncify.mjs';
 	import { Fd } from '@bjorn3/browser_wasi_shim';
+	import { PreopenDirectory, File } from '@bjorn3/browser_wasi_shim';
 
 	let output = 'Loading ExifTool...';
 
@@ -16,21 +17,30 @@
 		}
 	}
 
+    const perlScript = `
+use Image::ExifTool;
+my $exif = Image::ExifTool->new();
+print "ExifTool Version: " . $Image::ExifTool::VERSION . "\\n";
+`;
 	async function runWasm() {
 		try {
 			// Create WASI instance with stdin, stdout, stderr file descriptors
 			const wasi = new WASI(
-				['exiftool', '-ver'],  // Run exiftool with version flag
-				[
-					'LC_ALL=C'
-				],  // Add required locale environment variables
+				['perl', '-e', perlScript],
+				['LC_ALL=C'],
 				[
 					new CustomFd(), // stdin (fd 0)
 					new CustomFd(), // stdout (fd 1) 
-					new CustomFd()  // stderr (fd 2)
+					new CustomFd(), // stderr (fd 2)
+					new PreopenDirectory("/dev", new Map([
+						["null", new File(new Uint8Array())]
+					])),
+					new PreopenDirectory(".", new Map([
+						["test.jpeg", new File(new Uint8Array())]  // We'll need to put actual image data here
+					]))
 				],
 				{
-					debug: true // Enable debug logging
+					debug: true
 				}
 			);
 
