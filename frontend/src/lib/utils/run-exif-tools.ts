@@ -45,10 +45,10 @@ async function runExifTools(browserFile: globalThis.File): Promise<ParsedOutput>
 		const stdout = new CustomFd();
 		const stderr = new CustomFd();
 
-		// Create WASI instance with stdin, stdout, stderr file descriptors
+		// Create WASI instance with increased memory limits
 		const wasi = new WASI(
 			['perl', '-e', perlScript],
-			['LC_ALL=C'],
+			['LC_ALL=C', 'PERL_UNICODE=SD'], // Added PERL_UNICODE for better string handling
 			[
 				new CustomFd(), // stdin (fd 0)
 				stdout, // stdout (fd 1)
@@ -61,9 +61,16 @@ async function runExifTools(browserFile: globalThis.File): Promise<ParsedOutput>
 			}
 		);
 
-		// Set up imports
+		// Set up imports with memory configuration
 		const imports = {
-			wasi_snapshot_preview1: wasi.wasiImport
+			wasi_snapshot_preview1: wasi.wasiImport,
+			env: {
+				memory: new WebAssembly.Memory({
+					initial: 100, // Initial memory in pages (6.4MB)
+					maximum: 1000, // Maximum memory in pages (64MB)
+					shared: false
+				})
+			}
 		};
 
 		// In browser we'll need to fetch the wasm file
