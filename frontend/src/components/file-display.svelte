@@ -7,7 +7,7 @@
     export let output: ParsedOutput;
 </script>
 
-<div class="w-[65%] flex flex-col gap-4 max-h-[600px] overflow-auto bg-gray-100 border border-gray-300 rounded px-10 pb-10 pt-5">
+<div class="w-[65%] flex flex-col gap-4 max-h-[600px] min-w-[550px] overflow-auto bg-gray-100 border border-gray-300 rounded px-10 pb-10 pt-5">
     <h2 class="text-2xl py-3 font-mono font-extrabold">Metadata</h2>
     {#if currentFile}
         <div class="w-full overflow-auto transition-all duration-300 ease-in-out opacity-0 {fileUrl ? 'opacity-100' : ''} min-h-[200px]">

@@ -69,40 +69,58 @@
 </script>
 <main class="py-16 px-32 flex flex-col gap-8 font-mono">
     <div class="flex flex-col gap-6"> 
-	<h1 class="text-4xl font-mono font-bold">exiftool</h1>
-	<p class="max-w-2xl">
-		View the source code (or contribute, flag issues, etc) <a href="https://github.com/lucasgelfond/exiftool-web" class="text-blue-600 underline">here</a>. Based on <a href="https://exiftool.org/" class="text-blue-600 underline">exiftool</a>, <a href="https://github.com/uswriting/zeroperl" class="text-blue-600 underline">zeroperl</a>, and <a href="https://github.com/bjorn3/browser_wasi_shim" class="text-blue-600 underline">browser_wasi_shim</a>. Made with ❤️ in San Francisco by <a href="http://lucasgelfond.online" class="text-blue-600 underline">Lucas Gelfond</a>.
-	</p>
+        <h1 class="text-4xl font-mono font-bold">exiftool</h1>
+        <p class="max-w-2xl min-w-[600px]">
+            View the source code (or contribute, flag issues, etc) <a href="https://github.com/lucasgelfond/exiftool-web" class="text-blue-600 underline">here</a>. Based on <a href="https://exiftool.org/" class="text-blue-600 underline">exiftool</a>, <a href="https://github.com/uswriting/zeroperl" class="text-blue-600 underline">zeroperl</a>, and <a href="https://github.com/bjorn3/browser_wasi_shim" class="text-blue-600 underline">browser_wasi_shim</a>. Made with ❤️ in San Francisco by <a href="http://lucasgelfond.online" class="text-blue-600 underline">Lucas Gelfond</a>.
+        </p>
     </div>
-    <div class="flex gap-8">
-        <div class="w-[25%] flex flex-col gap-4 h-[600px]">
-            <FilePreview file={currentFile} url={fileUrl} />
 
-            <input
-                type="file"
-                accept="*/*"
-                class="hidden"
-                bind:this={fileInput}
-                on:change={handleFileSelect}
-                multiple
-            />
-            <div
-                bind:this={dropzone}
-                class="border-2 border-dashed p-4 rounded text-center cursor-pointer transition-colors {isDragging ? 'border-blue-500 bg-blue-50' : 'border-gray-300'}"
-                on:dragenter={handleDragEnter}
-                on:dragleave={handleDragLeave}
-                on:dragover|preventDefault
-                on:drop={handleDrop}
-                on:click={handleClick}
-                on:keydown={e => e.key === 'Enter' && handleClick()}
-                role="button"
-                tabindex="0"
-            >
-                {files.length > 0 ? 'Add more files' : 'Drop files here or click to select'}
-            </div>
+    <input
+        type="file"
+        accept="*/*"
+        class="hidden"
+        bind:this={fileInput}
+        on:change={handleFileSelect}
+        multiple
+    />
 
+    {#if files.length === 0}
+        <div
+            bind:this={dropzone}
+            class="h-[600px] min-w-[600px] border-2 border-dashed rounded flex items-center justify-center cursor-pointer transition-colors {isDragging ? 'border-blue-500 bg-blue-50' : 'border-gray-300'}"
+            on:dragenter={handleDragEnter}
+            on:dragleave={handleDragLeave}
+            on:dragover|preventDefault
+            on:drop={handleDrop}
+            on:click={handleClick}
+            on:keydown={e => e.key === 'Enter' && handleClick()}
+            role="button"
+            tabindex="0"
+        >
+            <p class="text-xl">Drop files here or click to select</p>
+        </div>
+    {:else}
+        <div class="flex gap-8">
+            <div class="w-[25%] min-w-[200px] flex flex-col gap-4 h-[600px]">
+                {#if currentFile && fileUrl}
+                    <FilePreview file={currentFile} url={fileUrl} />
+                {/if}
 
-            {#if files.length > 0}
+                <div
+                    bind:this={dropzone}
+                    class="border-2 border-dashed p-4 rounded text-center cursor-pointer transition-colors {isDragging ? 'border-blue-500 bg-blue-50' : 'border-gray-300'}"
+                    on:dragenter={handleDragEnter}
+                    on:dragleave={handleDragLeave}
+                    on:dragover|preventDefault
+                    on:drop={handleDrop}
+                    on:click={handleClick}
+                    on:keydown={e => e.key === 'Enter' && handleClick()}
+                    role="button"
+                    tabindex="0"
+                >
+                    Add more files
+                </div>
+
                 <div class="flex flex-col gap-2 overflow-auto">
                     {#each files as file}
                         <button
@@ -117,10 +135,10 @@
                         </button>
                     {/each}
                 </div>
+            </div>
+            {#if fileUrl}
+                <FileDisplay {fileUrl} currentFile={currentFile} {output} />
             {/if}
         </div>
-        {#if fileUrl}
-            <FileDisplay {fileUrl} currentFile={currentFile} {output} />
-        {/if}
-    </div>
+    {/if}
 </main>
