@@ -67,6 +67,18 @@
 	}
 
 </script>
+
+<svelte:head>
+    <title>exiftool-web | Browser-based interface for exiftool</title>
+    <meta name="description" content="A browser-based interface for exiftool. View and analyze image metadata directly in your browser." />
+    <meta property="og:title" content="exiftool-web" />
+    <meta property="og:description" content="A browser-based interface for exiftool. View and analyze image metadata directly in your browser." />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="exiftool-web" />
+    <meta name="twitter:description" content="A browser-based interface for exiftool. View and analyze image metadata directly in your browser." />
+</svelte:head>
+
 <main class="py-16 px-32 flex flex-col gap-8 font-mono">
     <div class="flex flex-col gap-6"> 
         <h1 class="text-4xl font-mono font-bold">exiftool-web</h1>
