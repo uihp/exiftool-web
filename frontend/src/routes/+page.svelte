@@ -69,7 +69,7 @@
 </script>
 <main class="py-16 px-32 flex flex-col gap-8 font-mono">
     <div class="flex flex-col gap-6"> 
-        <h1 class="text-4xl font-mono font-bold">exiftool</h1>
+        <h1 class="text-4xl font-mono font-bold">exiftool-web</h1>
         <p class="max-w-2xl min-w-[600px]">
             View the source code (or contribute, flag issues, etc) <a href="https://github.com/lucasgelfond/exiftool-web" class="text-blue-600 underline">here</a>. Based on <a href="https://exiftool.org/" class="text-blue-600 underline">exiftool</a>, <a href="https://github.com/uswriting/zeroperl" class="text-blue-600 underline">zeroperl</a>, and <a href="https://github.com/bjorn3/browser_wasi_shim" class="text-blue-600 underline">browser_wasi_shim</a>. Made with ❤️ in San Francisco by <a href="http://lucasgelfond.online" class="text-blue-600 underline">Lucas Gelfond</a>.
         </p>
