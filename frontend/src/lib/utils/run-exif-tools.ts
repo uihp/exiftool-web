@@ -4,6 +4,7 @@ import { PreopenDirectory, File } from '@bjorn3/browser_wasi_shim';
 import { instantiate } from './asyncify.mjs';
 import { Fd } from '@bjorn3/browser_wasi_shim';
 import type { ParsedOutput } from '$lib/types/parsed-output';
+import { fetchZeroPerl } from './fetch-zeroperl';
 
 class CustomFd extends Fd {
 	private collectedOutput = '';
@@ -74,8 +75,7 @@ async function runExifTools(browserFile: globalThis.File): Promise<ParsedOutput>
 		};
 
 		// In browser we'll need to fetch the wasm file
-		const response = await fetch('zeroperl.wasm');
-		const wasmBuffer = await response.arrayBuffer();
+		const wasmBuffer = await fetchZeroPerl();
 
 		console.log('Loading WASM...');
 		const { instance } = await instantiate(wasmBuffer, imports);
