@@ -22,6 +22,6 @@ Rather than building another GUI that requires installation, this one runs total
 
 ## Future Work
 
-It would not be very difficult to add to this tool in a way that would allow you to edit (or totally remove) EXIF data from images and download them, which would be a nice anonymization/privacy ue case. You can think of this somewhat in those terms as well—you can see what you are putting out there! 
+It would not be very difficult to add to this tool in a way that would allow you to edit (or totally remove) EXIF data from images and download them, which would be a nice anonymization/privacy ue case. You can think of this somewhat in those terms as well—you can see what you are putting out there! I'm also pretty eager to make this offline-friendly (i.e. with service workers / a browser manifest), and to bundle this as a desktop app: there's a few commits in here of starting to setup Tauri, but I got sidetracked / that will be a project for a different day! 
 
 We're open for patches and issues! Let me know how you find this. 
