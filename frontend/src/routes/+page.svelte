@@ -79,10 +79,10 @@
     <meta name="twitter:description" content="A browser-based interface for exiftool. View and analyze image metadata directly in your browser." />
 </svelte:head>
 
-<main class="py-16 px-32 flex flex-col gap-8 font-mono">
+<main class="py-4 px-4 sm:py-4 sm:px-8 md:py-16 md:px-32 lg:py-16 lg:px-32 flex flex-col gap-8 font-mono">
     <div class="flex flex-col gap-6"> 
-        <h1 class="text-4xl font-mono font-bold">exiftool-web</h1>
-        <p class="max-w-2xl min-w-[600px]">
+        <h1 class="md:text-4xl lg:text-4xl sm:text-4xl text-2xl font-mono font-bold">exiftool-web</h1>
+        <p class="max-w-xl text-xs sm:text-sm md:text-sm lg:text-sm xl:text-base text-wrap">
             View the source code (or contribute, flag issues, etc) <a href="https://github.com/lucasgelfond/exiftool-web" class="text-blue-600 underline">here</a>. Based on <a href="https://exiftool.org/" class="text-blue-600 underline">exiftool</a>, <a href="https://github.com/uswriting/zeroperl" class="text-blue-600 underline">zeroperl</a>, and <a href="https://github.com/bjorn3/browser_wasi_shim" class="text-blue-600 underline">browser_wasi_shim</a>. Made with ❤️ in San Francisco by <a href="http://lucasgelfond.online" class="text-blue-600 underline">Lucas Gelfond</a>.
         </p>
     </div>
@@ -99,7 +99,7 @@
     {#if files.length === 0}
         <div
             bind:this={dropzone}
-            class="h-[600px] min-w-[600px] border-2 border-dashed rounded flex items-center justify-center cursor-pointer transition-colors {isDragging ? 'border-blue-500 bg-blue-50' : 'border-gray-300'}"
+            class="h-[200px] min-w-[150px] sm:h-[300px] sm:min-w-[200px] md:h-[600px] md:min-w-[600px] border-2 border-dashed rounded flex items-center justify-center cursor-pointer transition-colors {isDragging ? 'border-blue-500 bg-blue-50' : 'border-gray-300'}"
             on:dragenter={handleDragEnter}
             on:dragleave={handleDragLeave}
             on:dragover|preventDefault
@@ -109,11 +109,14 @@
             role="button"
             tabindex="0"
         >
-            <p class="text-xl">Drop files here or click to select</p>
+            <p class="text-base md:text-xl">
+                <span class="hidden sm:inline">Drop files here or click to select</span>
+                <span class="sm:hidden">Select a file</span>
+            </p>
         </div>
     {:else}
-        <div class="flex gap-8">
-            <div class="w-[25%] min-w-[200px] flex flex-col gap-4 h-[600px]">
+        <div class="flex flex-col-reverse md:flex-row lg:flex-row gap-8">
+            <div class="w-full md:w-[25%] lg:w-[25%] min-w-[200px] flex flex-col gap-4 h-[600px]">
                 {#if currentFile && fileUrl}
                     <FilePreview file={currentFile} url={fileUrl} />
                 {/if}
