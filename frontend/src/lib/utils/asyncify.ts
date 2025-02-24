@@ -38,7 +38,10 @@ const State = {
 	Rewinding: 2
 };
 
-function isPromise(obj) {
+function isPromise(
+	// @ts-expect-error using an any
+	obj: any
+) {
 	return (
 		!!obj &&
 		(typeof obj === 'object' || typeof obj === 'function') &&
@@ -46,37 +49,63 @@ function isPromise(obj) {
 	);
 }
 
-function proxyGet(obj, transform) {
+function proxyGet(
+	// @ts-ignore
+	obj: any,
+	// @ts-ignore
+	transform: any
+) {
 	return new Proxy(obj, {
 		get: (obj, name) => transform(obj[name])
 	});
 }
 
+interface WebAssemblyExports {
+	asyncify_get_state: () => number;
+	asyncify_stop_rewind: () => void;
+	asyncify_start_unwind: (addr: number) => void;
+	asyncify_stop_unwind: () => void;
+	asyncify_start_rewind: (addr: number) => void;
+	memory?: WebAssembly.Memory;
+	[key: string]: any;
+}
+
+interface ImportObject {
+	env?: {
+		memory?: WebAssembly.Memory;
+		[key: string]: any;
+	};
+	[key: string]: any;
+}
+
 class Asyncify {
+	private value: unknown;
+	private exports: WebAssemblyExports;
+
 	constructor() {
 		this.value = undefined;
-		this.exports = null;
+		this.exports = {} as WebAssemblyExports;
 	}
 
-	getState() {
+	private getState(): number {
 		return this.exports.asyncify_get_state();
 	}
 
-	assertNoneState() {
-		let state = this.getState();
+	private assertNoneState(): void {
+		const state = this.getState();
 		if (state !== State.None) {
 			throw new Error(`Invalid async state ${state}, expected 0.`);
 		}
 	}
 
-	wrapImportFn(fn) {
-		return (...args) => {
+	private wrapImportFn(fn: Function): Function {
+		return (...args: unknown[]) => {
 			if (this.getState() === State.Rewinding) {
 				this.exports.asyncify_stop_rewind();
 				return this.value;
 			}
 			this.assertNoneState();
-			let value = fn(...args);
+			const value = fn(...args);
 			if (!isPromise(value)) {
 				return value;
 			}
@@ -85,8 +114,8 @@ class Asyncify {
 		};
 	}
 
-	wrapModuleImports(module) {
-		return proxyGet(module, (value) => {
+	private wrapModuleImports(module: Record<string, unknown>): Record<string, unknown> {
+		return proxyGet(module, (value: unknown) => {
 			if (typeof value === 'function') {
 				return this.wrapImportFn(value);
 			}
@@ -94,7 +123,7 @@ class Asyncify {
 		});
 	}
 
-	wrapImports(imports) {
+	wrapImports(imports?: ImportObject): ImportObject | undefined {
 		if (imports === undefined) return;
 
 		return proxyGet(imports, (moduleImports = Object.create(null)) =>
@@ -102,20 +131,19 @@ class Asyncify {
 		);
 	}
 
-	wrapExportFn(fn) {
+	private wrapExportFn(fn: Function): Function {
 		let newExport = WRAPPED_EXPORTS.get(fn);
 
 		if (newExport !== undefined) {
 			return newExport;
 		}
 
-		newExport = async (...args) => {
+		newExport = async (...args: unknown[]) => {
 			this.assertNoneState();
 
 			let result = fn(...args);
 
 			while (this.getState() === State.Unwinding) {
-				console.log('unwinding');
 				this.exports.asyncify_stop_unwind();
 				this.value = await this.value;
 				this.assertNoneState();
@@ -133,10 +161,10 @@ class Asyncify {
 		return newExport;
 	}
 
-	wrapExports(exports) {
-		let newExports = Object.create(null);
+	wrapExports(exports: WebAssemblyExports): Record<string, unknown> {
+		const newExports = Object.create(null);
 
-		for (let exportName in exports) {
+		for (const exportName in exports) {
 			let value = exports[exportName];
 			if (typeof value === 'function' && !exportName.startsWith('asyncify_')) {
 				value = this.wrapExportFn(value);
@@ -152,43 +180,59 @@ class Asyncify {
 		return newExports;
 	}
 
-	init(instance, imports) {
+	init(instance: WebAssembly.Instance, imports?: ImportObject): void {
 		const { exports } = instance;
 
-		const memory = exports.memory || (imports.env && imports.env.memory);
+		const memory = (exports as WebAssemblyExports).memory || (imports?.env && imports.env.memory);
+
+		if (!memory) {
+			throw new Error('Memory not found in exports or imports');
+		}
 
 		new Int32Array(memory.buffer, DATA_ADDR).set([DATA_START, DATA_END]);
 
-		this.exports = this.wrapExports(exports);
+		this.exports = this.wrapExports(exports as WebAssemblyExports) as WebAssemblyExports;
 
 		Object.setPrototypeOf(instance, Instance.prototype);
 	}
 }
 
 export class Instance extends WebAssembly.Instance {
-	constructor(module, imports) {
-		let state = new Asyncify();
+	constructor(
+		// @ts-ignore
+		module: any,
+		// @ts-ignore
+		imports: any
+	) {
+		const state = new Asyncify();
 		super(module, state.wrapImports(imports));
 		state.init(this, imports);
 	}
 
 	get exports() {
+		// @ts-expect-error
 		return WRAPPED_EXPORTS.get(super.exports);
 	}
 }
 
 Object.defineProperty(Instance.prototype, 'exports', { enumerable: true });
 
-export async function instantiate(source, imports) {
-	let state = new Asyncify();
-	let result = await WebAssembly.instantiate(source, state.wrapImports(imports));
+export async function instantiate(
+	source: WebAssembly.Module | BufferSource,
+	imports?: ImportObject
+): Promise<WebAssembly.WebAssemblyInstantiatedSource | WebAssembly.Instance> {
+	const state = new Asyncify();
+	const result = await WebAssembly.instantiate(source, state.wrapImports(imports));
 	state.init(result instanceof WebAssembly.Instance ? result : result.instance, imports);
 	return result;
 }
 
-export async function instantiateStreaming(source, imports) {
-	let state = new Asyncify();
-	let result = await WebAssembly.instantiateStreaming(source, state.wrapImports(imports));
+export async function instantiateStreaming(
+	source: Promise<Response>,
+	imports?: ImportObject
+): Promise<WebAssembly.WebAssemblyInstantiatedSource> {
+	const state = new Asyncify();
+	const result = await WebAssembly.instantiateStreaming(source, state.wrapImports(imports));
 	state.init(result.instance, imports);
 	return result;
 }

@@ -1,7 +1,7 @@
 import { WASI, WASIProcExit } from '@bjorn3/browser_wasi_shim';
 import { parseExifOutput } from './parse-exif-output';
 import { PreopenDirectory, File } from '@bjorn3/browser_wasi_shim';
-import { instantiate } from './asyncify.mjs';
+import { instantiate } from './asyncify.js';
 import { Fd } from '@bjorn3/browser_wasi_shim';
 import type { ParsedOutput } from '$lib/types/parsed-output';
 import { fetchZeroPerl } from './fetch-zeroperl';
