@@ -2,7 +2,7 @@
 
 Demo available at [http://exiftool.lucasgelfond.online](https://exiftool.lucasgelfond.online/). 
 
-![demo](https://github.com/user-attachments/assets/ecc8264c-bb96-41f0-b017-51ff623a20d4)
+![output](https://github.com/user-attachments/assets/9b8694ea-28a5-4da3-997d-87eb22096a60)
 
 
 ## Acknowledgements
