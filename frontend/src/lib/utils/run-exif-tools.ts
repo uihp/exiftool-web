@@ -30,7 +30,7 @@ async function runExifTools(browserFile: globalThis.File): Promise<ParsedOutput>
         use Image::ExifTool;
         my $exif = Image::ExifTool->new();      
 
-        $exif->Options(Unknown => 1);  # Show unknown tags  
+        $exif->Options(Unknown => 1, Escape => 1);  # Show unknown tags and escape HTML special chars
 
         my $info = $exif->ImageInfo("${fileName}");
         if ($exif->GetValue("Error")) {
