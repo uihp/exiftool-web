@@ -19,11 +19,6 @@ All of the code here lives in `frontend`, a standard [Svelte](https://svelte.dev
 Make sure you have [pnpm installed](https://pnpm.io/installation). After this, `git clone` the repo, `cd frontend` and `pnpm install` on the main directory. If you `pnpm dev`, the app should start running! `pnpm build` will make a production-ready version. 
 
 
-### For Beginners 
-
-Responding to 
-
-
 ## Background
 
 
