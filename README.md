@@ -12,6 +12,18 @@ This would not have been possible without [Andrew Sampson](https://andrew.im/)'s
 There's lots of prior art about emulating Perl in the browser that I looked through but didn't end up using, like [perlwasm](https://github.com/perlwasm/Wasm) and [webperl](https://github.com/haukex/webperl). Also helpful was documentation about WASI support in the browser, including "[Building a minimal WASI polyfill for browsers](https://dev.to/ndesmic/building-a-minimal-wasi-polyfill-for-browsers-4nel)", [wasm-cross](https://github.com/ndesmic/wasm-cross/blob/main/browser/wasi.js), [wasmer-js](https://github.com/wasmerio/wasmer-js), [WASI-Virt](https://github.com/bytecodealliance/WASI-Virt), and others.
 
 
+## Getting Started
+
+All of the code here lives in `frontend`, a standard [Svelte](https://svelte.dev/) webapp. 
+
+Make sure you have [pnpm installed](https://pnpm.io/installation). After this, `git clone` the repo, `cd frontend` and `pnpm install` on the main directory. If you `pnpm dev`, the app should start running! `pnpm build` will make a production-ready version. 
+
+
+### For Beginners 
+
+Responding to 
+
+
 ## Background
 
 
