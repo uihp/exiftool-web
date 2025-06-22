@@ -5,7 +5,7 @@
 	$: fileType = file?.type.toLowerCase() ?? '';
 </script>
 
-<div class="h-[100px] md:h-[200px] min-w-[200px] min-h-[100px] md:min-h-[200px] max-h-[100px] md:max-h-[200px] flex items-center justify-center bg-gray-100 rounded">
+<div class="h-[100px] md:h-[200px] min-w-[200px] min-h-[100px] md:min-h-[200px] max-h-[100px] md:max-h-[200px] flex items-center justify-center bg-gray-100 rounded  dark:bg-[#f3f4f60d]">
 	{#if file && url}
 		{#if fileType.startsWith('image/')}
 			{#if ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'].includes(fileType)}

@@ -16,7 +16,7 @@
     }
 </script>
 
-<div bind:this={container} class="w-full md:w-[65%] flex flex-col gap-4 max-h-[300px] md:max-h-[600px] md:min-w-[550px] overflow-auto bg-gray-100 border border-gray-300 rounded px-5 pb-5 pt-2.5">
+<div bind:this={container} class="w-full md:w-[65%] flex flex-col gap-4 max-h-[300px] md:max-h-[600px] md:min-w-[550px] overflow-auto bg-gray-100 border border-gray-300 rounded px-5 pb-5 pt-2.5 dark:bg-[#f3f4f60d] dark:border-gray-600">
     <h2 class="text-lg md:text-2xl md:py-3 py-2 font-mono font-extrabold">Metadata</h2>
     {#if currentFile}
         <div class="w-full overflow-auto transition-all duration-300 ease-in-out opacity-0 {fileUrl ? 'opacity-100' : ''} min-h-[200px]">

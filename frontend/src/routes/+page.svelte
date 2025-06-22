@@ -99,7 +99,7 @@
     {#if files.length === 0}
         <div
             bind:this={dropzone}
-            class="h-[200px] min-w-[150px] sm:h-[300px] sm:min-w-[200px] md:h-[400px] md:min-w-[500px] md:max-w-[800px] border-2 border-dashed rounded flex items-center justify-center cursor-pointer transition-colors {isDragging ? 'border-blue-500 bg-blue-50' : 'border-gray-300'}"
+            class="h-[200px] min-w-[150px] sm:h-[300px] sm:min-w-[200px] md:h-[400px] md:min-w-[500px] md:max-w-[800px] border-2 border-dashed rounded flex items-center justify-center cursor-pointer transition-colors {isDragging ? 'border-blue-500 bg-blue-50 dark:bg-[#1447e618]' : 'border-gray-300'}"
             on:dragenter={handleDragEnter}
             on:dragleave={handleDragLeave}
             on:dragover|preventDefault
@@ -109,7 +109,7 @@
             role="button"
             tabindex="0"
         >
-            <p class="text-base md:text-xl">
+            <p class="text-base md:text-xl pointer-events-none">
                 <span class="hidden sm:inline">Drop files here or click to select</span>
                 <span class="sm:hidden">Select a file</span>
             </p>
@@ -123,7 +123,7 @@
 
                 <div
                     bind:this={dropzone}
-                    class="border-2 border-dashed p-4 rounded text-center cursor-pointer transition-colors {isDragging ? 'border-blue-500 bg-blue-50' : 'border-gray-300'}"
+                    class="border-2 border-dashed p-4 rounded text-center cursor-pointer transition-colors {isDragging ? 'border-blue-500 bg-blue-50 dark:bg-[#1447e618]' : 'border-gray-300'}"
                     on:dragenter={handleDragEnter}
                     on:dragleave={handleDragLeave}
                     on:dragover|preventDefault
@@ -139,7 +139,7 @@
                 <div class="flex flex-col gap-2 overflow-auto">
                     {#each files as file}
                         <button
-                            class="flex flex-col gap-1 p-3 text-left border rounded hover:bg-gray-50 transition-colors {file === currentFile ? 'border-blue-500 bg-blue-50' : 'border-gray-200'}"
+                            class="flex flex-col gap-1 p-3 text-left border rounded hover:bg-gray-50 transition-colors {file === currentFile ? 'border-blue-500 bg-blue-50 dark:bg-[#1447e618]' : 'border-gray-200 dark:border-gray-300'}"
                             on:click={() => selectFile(file)}
                         >
                             <div class="font-mono truncate">{file.name}</div>
