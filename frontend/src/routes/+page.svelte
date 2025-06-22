@@ -28,9 +28,7 @@
 		const droppedFiles = e.dataTransfer?.files;
 		if (droppedFiles && droppedFiles.length > 0) {
 			files = [...files, ...Array.from(droppedFiles)];
-			if (!currentFile) {
-				await selectFile(files[0]);
-			}
+			await selectFile(droppedFiles[0]);
 		}
 	}
 
@@ -43,9 +41,7 @@
 		const selectedFiles = target.files;
 		if (selectedFiles && selectedFiles.length > 0) {
 			files = [...files, ...Array.from(selectedFiles)];
-			if (!currentFile) {
-				await selectFile(files[0]);
-			}
+			await selectFile(selectedFiles[0]);
 		}
 		// Reset input so the same file can be selected again
 		target.value = '';
