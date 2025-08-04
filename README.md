@@ -7,9 +7,16 @@ Demo available at [http://exiftool.lucasgelfond.online](https://exiftool.lucasge
 
 ## Acknowledgements
 
-This would not have been possible without [Andrew Sampson](https://andrew.im/)'s phenomenal package [zeroperl](https://github.com/uswriting/zeroperl) and corresponding [writeup](https://andrews.substack.com/p/zeroperl-sandboxed-perl-with-webassembly?r=44njw&utm_campaign=post&utm_medium=web&triedRedirect=true). This also would not have been possible without [browser_wasi_shim](https://github.com/bjorn3/browser_wasi_shim), a package that provides WASI support in web browsers, necessary for execution here. 
+This would not have been possible without [Andrew Sampson](https://andrew.im/)'s phenomenal package [zeroperl](https://github.com/uswriting/zeroperl) and corresponding [writeup](https://andrews.substack.com/p/zeroperl-sandboxed-perl-with-webassembly?r=44njw&utm_campaign=post&utm_medium=web&triedRedirect=true). (A few days after I built this, they finished up a [dedicated exiftool package](https://github.com/uswriting/exiftool/), that has a nicer API if you're trying to integrate this into another project!) This also would not have been possible without [browser_wasi_shim](https://github.com/bjorn3/browser_wasi_shim), a package that provides WASI support in web browsers, necessary for execution here. 
 
 There's lots of prior art about emulating Perl in the browser that I looked through but didn't end up using, like [perlwasm](https://github.com/perlwasm/Wasm) and [webperl](https://github.com/haukex/webperl). Also helpful was documentation about WASI support in the browser, including "[Building a minimal WASI polyfill for browsers](https://dev.to/ndesmic/building-a-minimal-wasi-polyfill-for-browsers-4nel)", [wasm-cross](https://github.com/ndesmic/wasm-cross/blob/main/browser/wasi.js), [wasmer-js](https://github.com/wasmerio/wasmer-js), [WASI-Virt](https://github.com/bytecodealliance/WASI-Virt), and others.
+
+
+## Getting Started
+
+All of the code here lives in `frontend`, a standard [Svelte](https://svelte.dev/) webapp. 
+
+Make sure you have [pnpm installed](https://pnpm.io/installation). After this, `git clone` the repo, `cd frontend` and `pnpm install` on the main directory. If you `pnpm dev`, the app should start running! `pnpm build` will make a production-ready version. 
 
 
 ## Background
