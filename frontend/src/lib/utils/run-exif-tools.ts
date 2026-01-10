@@ -26,13 +26,20 @@ async function runExifTools(browserFile: globalThis.File): Promise<ParsedOutput>
 		const fileName = browserFile.name;
 		const imageData = await browserFile.arrayBuffer();
 
+		// Escape special characters for Perl double-quoted string
+		const escapedFileName = fileName
+			.replace(/\\/g, '\\\\')
+			.replace(/"/g, '\\"')
+			.replace(/\$/g, '\\$')
+			.replace(/@/g, '\\@');
+
 		const perlScript = `
         use Image::ExifTool;
-        my $exif = Image::ExifTool->new();      
+        my $exif = Image::ExifTool->new();
 
-        $exif->Options(Unknown => 1, Escape => 1);  # Show unknown tags and escape HTML special chars
+        $exif->Options(Unknown => 1);  # Show unknown tags
 
-        my $info = $exif->ImageInfo("${fileName}");
+        my $info = $exif->ImageInfo("${escapedFileName}");
         if ($exif->GetValue("Error")) {
             print "Error: " . $exif->GetValue("Error") . "\\n";
         } else {
@@ -46,6 +53,11 @@ async function runExifTools(browserFile: globalThis.File): Promise<ParsedOutput>
 		const stdout = new CustomFd();
 		const stderr = new CustomFd();
 
+		// Create virtual filesystem with image file
+		const filesMap = new Map([
+			[fileName, new File(new Uint8Array(imageData))]
+		]);
+
 		// Create WASI instance with increased memory limits
 		const wasi = new WASI(
 			['perl', '-e', perlScript],
@@ -55,7 +67,7 @@ async function runExifTools(browserFile: globalThis.File): Promise<ParsedOutput>
 				stdout, // stdout (fd 1)
 				stderr, // stderr (fd 2)
 				new PreopenDirectory('/dev', new Map([['null', new File(new Uint8Array())]])),
-				new PreopenDirectory('.', new Map([[fileName, new File(new Uint8Array(imageData))]]))
+				new PreopenDirectory('.', filesMap)
 			],
 			{
 				debug: true
